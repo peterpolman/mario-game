@@ -133,14 +133,33 @@ App = {
     for (const playerId in App.players) {
       const player = App.players[playerId];
       const distance = 20;
-      const block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
+      if (!player.blocks[0] && !player.blocks[0]) return;
+      let block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
 
-      setNextBlockPosition(block, player.direction);
+      block = this.setNextBlockPosition(block, player.direction);
 
+
+      const allBlocks = Object.values(App.players).filter((p) => p !== playerId).map(({blocks}) => blocks).reduce((a,b) => a.concat(b));
+      const rest = allBlocks.filter((b) => {
+        return b.x === block.x && b.y === block.y
+      })
+      
+     
       player.blocks.unshift(block);
-
       App.canvas.appendChild(block);
       App.canvas.removeChild(player.blocks.pop());
+
+       // Player hit other player
+       if (player.direction && rest.length > 0) {
+        App.players[playerId].blocks.forEach((b, index) => {
+          App.players[playerId].blocks.splice(index, 1);
+          App.canvas.removeChild(b);
+          // console.log(b)
+        })
+  
+        App.players.splice(playerId, 1);
+      }
+
     }
   },
 
@@ -178,7 +197,8 @@ App = {
     else if (block.y > this.numBlockVertical * 20 - 20) {
       block.y = 0;
     }
-
+    
+    return block;
   },
 
 
