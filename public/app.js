@@ -9,7 +9,7 @@ App = {
   socket: io(),
 
   // Initialize UI and configure player
-  init: function() {
+  init: function () {
     // Set viewport dimensions]
     this.uiWidth = this.canvas.clientWidth;
     this.uiHeight = this.canvas.clientHeight;
@@ -18,7 +18,7 @@ App = {
     this.bindEvents();
 
     // Handle new players
-    this.socket.on('player connected', function(msg){
+    this.socket.on('player connected', function (msg) {
       console.log('player disconnected: ' + msg);
 
       // Render players
@@ -29,18 +29,18 @@ App = {
     });
 
     // Handle disconnected players
-    this.socket.on('player disconnected', function(msg){
+    this.socket.on('player disconnected', function (msg) {
       if (!App.players[msg]) return;
 
       App.players[msg].blocks.forEach((block) => {
         App.canvas.removeChild(block);
       })
-      
+
       App.players.splice(msg, 1);
       console.log('player disconnected: ' + msg);
     });
 
-    this.socket.on('move player', function(msg){
+    this.socket.on('move player', function (msg) {
       App.move(msg[0], msg[1]);
     });
 
@@ -48,14 +48,14 @@ App = {
     return this.gameTimer();
   },
 
-  emitDirection: function(event) {
+  emitDirection: function (event) {
     App.socket.emit('move player', this.id);
     event.preventDefault();
   },
 
   move(player, direction) {
     if (
-      (App.players[player].direction === 'left' && direction === 'right') || 
+      (App.players[player].direction === 'left' && direction === 'right') ||
       (App.players[player].direction === 'up' && direction === 'down') ||
       (App.players[player].direction === 'right' && direction === 'left') ||
       (App.players[player].direction === 'down' && direction === 'up')
@@ -63,7 +63,7 @@ App = {
     App.players[player].direction = direction;
   },
 
-  bindEvents: function() {
+  bindEvents: function () {
     // document.addEventListener('keydown', this.move );
     var btnDirection = document.getElementsByClassName('btnDirection');
     for (var i = 0; i < btnDirection.length; i++) {
@@ -71,7 +71,7 @@ App = {
     }
   },
 
-  createCoin: function(x, y, radius) {
+  createCoin: function (x, y, radius) {
     var car = document.createElement('span');
     car.classList.add('car');
 
@@ -84,18 +84,18 @@ App = {
 
     return car;
   },
-  
+
   // Helper method for player creation
   createPlayer() {
     const player = {
-      color: Math.floor(Math.random()*16777215).toString(16),
+      color: Math.floor(Math.random() * 16777215).toString(16),
       blocks: []
     }
     const startX = this.uiWidth / 2;
     const startY = this.uiHeight / 2;
     const positions = [[startX, startY], [startX + 20, startY]];
 
-    for (const [x,y] of positions) {
+    for (const [x, y] of positions) {
       const block = this.addBlock(x, y);
       player.blocks.unshift(block);
     };
@@ -103,14 +103,14 @@ App = {
     return player;
   },
 
-  addBlock: function(x, y, color) {
+  addBlock: function (x, y, color) {
     var block = document.createElement('div');
     block.classList.add('player');
 
     block.x = x;
     block.y = y;
     block.radius = 15;
-    
+
     block.style.left = block.x;
     block.style.top = block.y;
     block.style.backgroundColor = color;
@@ -128,48 +128,69 @@ App = {
     }
 
   },
-  
+
   updateSnakes() {
     for (const playerId in App.players) {
       const player = App.players[playerId];
       const distance = 20;
       const block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
-      
-      switch(player.direction) {
-        case 'up': {
-          block.style.top = block.y = block.y - distance;
-          break
-        }
-        case 'down': {
-          block.style.top = block.y = block.y + distance;
-          break
-        }
-        case 'left':{
-          block.style.left = block.x = block.x - distance;
-          break
-        }
-        case 'right':{
-          block.style.left = block.x = block.x + distance;
-          break
-        }
-      }
-      
+
+      setNextBlockPosition(block, player.direction);
+
       player.blocks.unshift(block);
-      
+
       App.canvas.appendChild(block);
       App.canvas.removeChild(player.blocks.pop());
     }
   },
 
-  updateInterface: function() {
-    for(id in App.players){
+  setNextBlockPosition(block, direction) {
+    const distance = 20;
+    switch (direction) {
+      case 'up': {
+        block.y = block.y - distance;
+        break
+      }
+      case 'down': {
+        block.y = block.y + distance;
+        break
+      }
+      case 'left': {
+        block.x = block.x - distance;
+        break
+      }
+      case 'right': {
+        block.x = block.x + distance;
+        break
+      }
+    }
+
+    if (block.x <= 0) {
+      block.x = this.uiWidth - 20;
+    }
+    else if (block.x > (this.numBlockHorizontal) * 20) {
+      block.x = 0;
+    }
+
+    if (block.y < 0) {
+      block.y = this.numBlockVertical * 20 - 20;
+    }
+    else if (block.y > this.numBlockVertical * 20 - 20) {
+      block.y = 0;
+    }
+
+  },
+
+
+  updateInterface: function () {
+    for (id in App.players) {
       const player = App.players[id];
-      
+
       for (const block of player.blocks) {
         // Detect for collision
         for (var i = 0; i < App.cars.length; i++) {
           var coin = App.cars[i];
-        
+
           const coinCollision = App.detectCollision(coin, block);
           if (coinCollision) {
             // Remove from active list
@@ -186,7 +207,7 @@ App = {
             const block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
             App.players[id].blocks.unshift(block);
             App.canvas.appendChild(block);
-            
+
             // Speed up
             // this.speed = this.speed - 10 > 10 ? this.speed - 10 : this.speed;
             // window.clearInterval(this.interval);
@@ -197,7 +218,7 @@ App = {
     }
   },
 
-  spawnCoins: function() {
+  spawnCoins: function () {
     if (App.cars.length === 1) return;
     var posX = Math.floor((Math.random() * App.uiWidth) + 1)
     var posY = Math.floor((Math.random() * App.uiHeight) + 1)
@@ -221,6 +242,6 @@ App = {
 
 }
 
-window.onload = function() {
+window.onload = function () {
   App.init();
 }
