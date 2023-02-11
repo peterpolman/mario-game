@@ -172,8 +172,10 @@ App = {
           
           let otherBlocks = []
           for (const playerId in App.players) {
-            const player = App.players[playerId];
-            otherBlocks = otherBlocks.concat(player.blocks);
+            if (id !== playerId) {
+              const player = App.players[playerId];
+              otherBlocks = otherBlocks.concat(player.blocks);  
+            }
           }
 
           for (const b of otherBlocks) {
