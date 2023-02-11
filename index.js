@@ -5,31 +5,34 @@ var io = require('socket.io')(http);
 
 app.use(express.static('public'))
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/control', function(req, res){
+app.get('/control', function (req, res) {
   res.sendFile(__dirname + '/control.html');
 });
 
-io.on('connection', function(socket){
-
-  io.emit('player connected', socket.id);
-  console.log('player connected: ' + socket.id);
-
-  socket.on('move player', function(direction){
+io.on('connection', function (socket) {
+  socket.on('move player', function (direction) {
     var msg = [socket.id, direction];
     io.emit('move player', msg);
   });
 
-  socket.on('disconnect', function(){
+  socket.on('player connected', function (direction) {
+    console.log('player connected: ' + socket.id);
+    io.emit('player connected', socket.id);
+  });
+
+
+
+  socket.on('disconnect', function () {
     io.emit('player disconnected', socket.id);
     console.log('player disconnected: ' + socket.id);
   });
 
 });
 
-http.listen(3000, function(){
+http.listen(3000, function () {
   console.log('listening on *:3000');
 });

@@ -3,17 +3,20 @@ Control = {
   socket: io(),
 
   // Initialize UI and configure player
-  init: function() {
+  init: function () {
     // Bind events to elements in UI and keyboard
     this.bindEvents();
+
+    Control.socket.emit('player connected');
+
   },
 
-  emitDirection: function(event) {
+  emitDirection: function (event) {
     Control.socket.emit('move player', this.id);
     event.preventDefault();
   },
 
-  move: function(event) {
+  move: function (event) {
     var keyName = event.key;
 
     if (keyName == 'ArrowLeft') {
@@ -34,8 +37,8 @@ Control = {
 
   },
 
-  bindEvents: function() {
-    document.addEventListener('keydown', this.move );
+  bindEvents: function () {
+    document.addEventListener('keydown', this.move);
     var btnDirection = document.getElementsByClassName('btnDirection');
     for (var i = 0; i < btnDirection.length; i++) {
       btnDirection[i].addEventListener('click', this.emitDirection);
@@ -43,6 +46,6 @@ Control = {
   }
 }
 
-window.onload = function() {
+window.onload = function () {
   Control.init();
 }

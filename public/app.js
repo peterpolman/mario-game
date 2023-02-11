@@ -6,6 +6,7 @@ App = {
   canvas: document.getElementById('canvas'),
   players: [],
   cars: [],
+  size: 20,
   socket: io(),
 
   // Initialize UI and configure player
@@ -14,30 +15,27 @@ App = {
     this.uiWidth = this.canvas.clientWidth;
     this.uiHeight = this.canvas.clientHeight;
 
+    this.numBlocksVertical = this.uiHeight / this.size;
+    this.numBlocksHorizontal = this.uiWidth / this.size;
+
     // Bind events to elements in UI and keyboard
     this.bindEvents();
 
     // Handle new players
-    this.socket.on('player connected', function (msg) {
-      console.log('player disconnected: ' + msg);
+    this.socket.on('player connected', function (socketId) {
+      console.log('player connected: ' + socketId);
 
+      player = App.createPlayer(socketId);
       // Render players
-      App.players[msg] = App.createPlayer();
-      App.players[msg].blocks.forEach((block) => {
+      App.players[socketId] = player;
+      player.blocks.forEach((block) => {
         App.canvas.appendChild(block);
       });
     });
 
     // Handle disconnected players
-    this.socket.on('player disconnected', function (msg) {
-      if (!App.players[msg]) return;
-
-      App.players[msg].blocks.forEach((block) => {
-        App.canvas.removeChild(block);
-      })
-
-      App.players.splice(msg, 1);
-      console.log('player disconnected: ' + msg);
+    this.socket.on('player disconnected', function (socketId) {
+      App.die(socketId);
     });
 
     this.socket.on('move player', function (msg) {
@@ -46,6 +44,16 @@ App = {
 
     // Start the game when done
     return this.gameTimer();
+  },
+  die(playerId) {
+    if (!App.players[playerId]) return;
+
+    App.players[playerId].blocks.forEach((block) => {
+      App.canvas.removeChild(block);
+    })
+
+    delete App.players[playerId];
+    console.log('player disconnected: ' + playerId);
   },
 
   emitDirection: function (event) {
@@ -89,21 +97,22 @@ App = {
   createPlayer() {
     const player = {
       color: Math.floor(Math.random() * 16777215).toString(16),
-      blocks: []
+      blocks: [],
+      direction: "right",
     }
     const startX = this.uiWidth / 2;
     const startY = this.uiHeight / 2;
     const positions = [[startX, startY], [startX + 20, startY]];
 
     for (const [x, y] of positions) {
-      const block = this.addBlock(x, y);
+      const block = this.newBlock(x, y);
       player.blocks.unshift(block);
     };
 
     return player;
   },
 
-  addBlock: function (x, y, color) {
+  newBlock: function (x, y, color) {
     var block = document.createElement('div');
     block.classList.add('player');
 
@@ -132,54 +141,45 @@ App = {
   updateSnakes() {
     for (const playerId in App.players) {
       const player = App.players[playerId];
-      const distance = 20;
-      if (!player.blocks[0] && !player.blocks[0]) return;
-      let block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
-
-      block = this.setNextBlockPosition(block, player.direction);
-
-
-      const allBlocks = Object.values(App.players).filter((p) => p !== playerId).map(({blocks}) => blocks).reduce((a,b) => a.concat(b));
-      const rest = allBlocks.filter((b) => {
-        return b.x === block.x && b.y === block.y
-      })
-      
-     
-      player.blocks.unshift(block);
-      App.canvas.appendChild(block);
       App.canvas.removeChild(player.blocks.pop());
+    }
+    const allBlocks = Object.values(App.players).length > 0 ? Object.values(App.players).map(({ blocks }) => blocks).reduce((a, b) => a.concat(b)) : [];
 
-       // Player hit other player
-       if (player.direction && rest.length > 0) {
-        App.players[playerId].blocks.forEach((b, index) => {
-          App.players[playerId].blocks.splice(index, 1);
-          App.canvas.removeChild(b);
-          // console.log(b)
-        })
-  
-        App.players.splice(playerId, 1);
+    playerloop:
+    for (const playerId in App.players) {
+      const player = App.players[playerId];
+      const block = this.getNextBlock(player);
+
+      for (const checkBlock of allBlocks) {
+        if (checkBlock.y == block.y && checkBlock.x == block.x) {
+          this.die(playerId);
+          continue playerloop;
+        }
       }
 
+      player.blocks.unshift(block);
+      App.canvas.appendChild(block);
     }
   },
 
-  setNextBlockPosition(block, direction) {
-    const distance = 20;
-    switch (direction) {
+  getNextBlock(player) {
+
+    const block = this.newBlock(player.blocks[0].x, player.blocks[0].y, player.color);
+    switch (player.direction) {
       case 'up': {
-        block.y = block.y - distance;
+        block.y = block.y - this.size;
         break
       }
       case 'down': {
-        block.y = block.y + distance;
+        block.y = block.y + this.size;
         break
       }
       case 'left': {
-        block.x = block.x - distance;
+        block.x = block.x - this.size;
         break
       }
       case 'right': {
-        block.x = block.x + distance;
+        block.x = block.x + this.size;
         break
       }
     }
@@ -187,17 +187,17 @@ App = {
     if (block.x <= 0) {
       block.x = this.uiWidth - 20;
     }
-    else if (block.x > (this.numBlockHorizontal) * 20) {
+    else if (block.x > (this.numBlocksHorizontal) * 20) {
       block.x = 0;
     }
 
     if (block.y < 0) {
-      block.y = this.numBlockVertical * 20 - 20;
+      block.y = this.numBlocksVertical * 20;
     }
-    else if (block.y > this.numBlockVertical * 20 - 20) {
+    else if (block.y > this.numBlocksVertical * 20) {
       block.y = 0;
     }
-    
+
     return block;
   },
 
@@ -224,7 +224,7 @@ App = {
             App.canvas.removeChild(coin);
 
             // Add block to player
-            const block = this.addBlock(player.blocks[0].x, player.blocks[0].y, player.color);
+            const block = this.newBlock(player.blocks[0].x, player.blocks[0].y, player.color);
             App.players[id].blocks.unshift(block);
             App.canvas.appendChild(block);
 
