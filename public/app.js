@@ -15,9 +15,9 @@ App = {
     this.uiWidth = this.canvas.clientWidth;
     this.uiHeight = this.canvas.clientHeight;
 
-    this.numBlocksVertical = this.uiHeight / this.size;
-    this.numBlocksHorizontal = this.uiWidth / this.size;
-
+    this.numBlocksVertical = Math.floor(this.uiHeight / this.size);
+    this.numBlocksHorizontal = Math.floor(this.uiWidth / this.size);
+    console.log(this);
     // Bind events to elements in UI and keyboard
     this.bindEvents();
 
@@ -42,6 +42,10 @@ App = {
       App.move(msg[0], msg[1]);
     });
 
+    App.spawnCoin();
+    App.spawnCoin();
+    App.spawnCoin();
+    App.spawnCoin();
     App.spawnCoin();
     // Start the game when done
     return this.gameTimer();
@@ -101,8 +105,8 @@ App = {
       blocks: [],
       direction: "right",
     }
-    const startX = this.uiWidth / 2;
-    const startY = this.uiHeight / 2;
+    const startX = Math.round(this.numBlocksHorizontal / 2) * this.size;
+    const startY = Math.round(this.numBlocksVertical / 2) * this.size;
     const positions = [[startX, startY], [startX + 20, startY]];
 
     for (const [x, y] of positions) {
