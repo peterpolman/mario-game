@@ -9,6 +9,27 @@ Control = {
 
     Control.socket.emit('player connected');
 
+    var container = document.body;
+    SwipeListener(container);
+    container.addEventListener('swipe', function (e) {
+      var directions = e.detail.directions;
+      console.log(directions);
+      if (directions.left) {
+        Control.socket.emit('move player', 'left');
+      }
+
+      if (directions.right) {
+        Control.socket.emit('move player', 'right');
+      }
+
+      if (directions.top) {
+        Control.socket.emit('move player', 'up');
+      }
+
+      if (directions.bottom) {
+        Control.socket.emit('move player', 'down');
+      }
+    });
   },
 
   emitDirection: function (event) {

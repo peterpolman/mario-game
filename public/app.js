@@ -42,6 +42,7 @@ App = {
       App.move(msg[0], msg[1]);
     });
 
+    App.spawnCoin();
     // Start the game when done
     return this.gameTimer();
   },
@@ -127,11 +128,11 @@ App = {
   },
 
   detectCollision: function (car, player) {
-    var dx = car.x - player.x;
-    var dy = car.y - player.y;
+    var dx = (car.x + this.size / 2) - (player.x + this.size / 2);
+    var dy = (car.y + this.size / 2) - (player.y + this.size / 2);
     var distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < car.radius + player.radius) {
+    if (distance < car.radius + player.radius / 2) {
       // collision detected!
       return true;
     }
@@ -228,6 +229,7 @@ App = {
             App.players[id].blocks.unshift(block);
             App.canvas.appendChild(block);
 
+            App.spawnCoin();
             // Speed up
             // this.speed = this.speed - 10 > 10 ? this.speed - 10 : this.speed;
             // window.clearInterval(this.interval);
@@ -238,8 +240,8 @@ App = {
     }
   },
 
-  spawnCoins: function () {
-    if (App.cars.length === 1) return;
+  spawnCoin: function () {
+    // if (App.cars.length === 1) return;
     var posX = Math.floor((Math.random() * App.uiWidth) + 1)
     var posY = Math.floor((Math.random() * App.uiHeight) + 1)
 
@@ -255,7 +257,7 @@ App = {
   gameTimer() {
     this.interval = window.setInterval(this.updateSnakes.bind(this), this.speed);
     window.setInterval(this.updateInterface.bind(this), 100);
-    window.setInterval(this.spawnCoins, 1000);
+    // window.setInterval(this.spawnCoins, 1000);
 
     return true;
   }
