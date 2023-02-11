@@ -153,8 +153,9 @@ App = {
           break
         }
       }
-
+      
       player.blocks.unshift(block);
+      
       App.canvas.appendChild(block);
       App.canvas.removeChild(player.blocks.pop());
     }
@@ -163,28 +164,12 @@ App = {
   updateInterface: function() {
     for(id in App.players){
       const player = App.players[id];
-
-      for (var i = 0; i < App.cars.length; i++) {
-        var coin = App.cars[i];
-    
+      
+      for (const block of player.blocks) {
         // Detect for collision
-        for (const block of player.blocks) {
-          
-          let otherBlocks = []
-          for (const playerId in App.players) {
-            if (id !== playerId) {
-              const player = App.players[playerId];
-              otherBlocks = otherBlocks.concat(player.blocks);  
-            }
-          }
-
-          for (const b of otherBlocks) {
-            const playerCollision = App.detectCollision(b, block);
-            if (playerCollision) {
-              debugger
-            }
-          }
-
+        for (var i = 0; i < App.cars.length; i++) {
+          var coin = App.cars[i];
+        
           const coinCollision = App.detectCollision(coin, block);
           if (coinCollision) {
             // Remove from active list
@@ -203,19 +188,9 @@ App = {
             App.canvas.appendChild(block);
             
             // Speed up
-            this.speed = this.speed - 10 > 10 ? this.speed - 10 : this.speed;
-            window.clearInterval(this.interval);
-            this.interval = window.setInterval(this.updateSnakes.bind(this), this.speed);
-          }
-          
-          if (
-            block.style.top >= App.uiHeight ||
-            block.style.top < 0 ||
-            block.style.left >= App.uiWidth ||
-            block.style.left < 0
-          ) {
-            debugger
-            // App.canvas.removeChild(block);
+            // this.speed = this.speed - 10 > 10 ? this.speed - 10 : this.speed;
+            // window.clearInterval(this.interval);
+            // this.interval = window.setInterval(this.updateSnakes.bind(this), this.speed);
           }
         }
       }
@@ -223,6 +198,7 @@ App = {
   },
 
   spawnCoins: function() {
+    if (App.cars.length === 1) return;
     var posX = Math.floor((Math.random() * App.uiWidth) + 1)
     var posY = Math.floor((Math.random() * App.uiHeight) + 1)
 
