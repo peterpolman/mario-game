@@ -17,17 +17,18 @@ App = {
 
     this.numBlocksVertical = Math.floor(this.uiHeight / this.size);
     this.numBlocksHorizontal = Math.floor(this.uiWidth / this.size);
-    console.log(this);
+    
     // Bind events to elements in UI and keyboard
     this.bindEvents();
 
     // Handle new players
-    this.socket.on('player connected', function (socketId) {
-      console.log('player connected: ' + socketId);
+    this.socket.on('player connected', (playerId, color) => {
+      console.log('player connected: ', playerId, color);
 
-      player = App.createPlayer(socketId);
+      player = App.createPlayer(color);
       // Render players
-      App.players[socketId] = player;
+      App.players[playerId] = player;
+
       player.blocks.forEach((block) => {
         App.canvas.appendChild(block);
       });
@@ -99,9 +100,9 @@ App = {
   },
 
   // Helper method for player creation
-  createPlayer() {
+  createPlayer(color) {
     const player = {
-      color: Math.floor(Math.random() * 16777215).toString(16),
+      color,
       blocks: [],
       direction: "right",
     }

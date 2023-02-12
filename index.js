@@ -19,12 +19,10 @@ io.on('connection', function (socket) {
     io.emit('move player', msg);
   });
 
-  socket.on('player connected', function (direction) {
-    console.log('player connected: ' + socket.id);
-    io.emit('player connected', socket.id);
+  socket.on('player connected', function (color) {
+    console.log('player connected: ' + socket.id, color);
+    io.emit('player connected', socket.id, color);
   });
-
-
 
   socket.on('disconnect', function () {
     io.emit('player disconnected', socket.id);

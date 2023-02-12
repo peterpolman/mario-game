@@ -1,39 +1,43 @@
 // Class defines game rules
 Control = {
   socket: io(),
+  color: Math.floor(Math.random() * 16777215).toString(16),
 
   // Initialize UI and configure player
   init: function () {
     // Bind events to elements in UI and keyboard
     this.bindEvents();
 
-    Control.socket.emit('player connected');
+    document.body.style.backgroundColor = this.color;
+
+    this.socket.emit('player connected', this.color);
 
     var container = document.body;
+    
     SwipeListener(container);
+    
     container.addEventListener('swipe', function (e) {
       var directions = e.detail.directions;
-      console.log(directions);
       if (directions.left) {
-        Control.socket.emit('move player', 'left');
+        this.socket.emit('move player', 'left');
       }
 
       if (directions.right) {
-        Control.socket.emit('move player', 'right');
+        this.socket.emit('move player', 'right');
       }
 
       if (directions.top) {
-        Control.socket.emit('move player', 'up');
+        this.socket.emit('move player', 'up');
       }
 
       if (directions.bottom) {
-        Control.socket.emit('move player', 'down');
+        this.socket.emit('move player', 'down');
       }
     });
   },
 
   emitDirection: function (event) {
-    Control.socket.emit('move player', this.id);
+    this.socket.emit('move player', this.id);
     event.preventDefault();
   },
 
