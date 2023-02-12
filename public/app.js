@@ -51,15 +51,17 @@ App = {
     // Start the game when done
     return this.gameTimer();
   },
+
   die(playerId) {
     if (!App.players[playerId]) return;
+
+    this.socket.emit('player dies', playerId);
 
     App.players[playerId].blocks.forEach((block) => {
       App.canvas.removeChild(block);
     })
 
     delete App.players[playerId];
-    console.log('player disconnected: ' + playerId);
   },
 
   emitDirection: function (event) {

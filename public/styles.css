@@ -4,7 +4,7 @@ body {
   background: black;
   width: 100%;
   height: 100%;
-  /* overflow: hidden; */
+  /* overflow:c hidden; */
 }
 
 #canvas {
@@ -22,6 +22,19 @@ body {
   background: black;
   box-shadow: inset 0 0 0 10px red;
   /* background: url('texture-ground.png'); */
+}
+
+#controls {
+  width: 100%;
+  height: 100%;
+  font-size: 3rem;
+  font-weight: bold;
+  font-family: Arial;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  pointer-events: none;
 }
 
 .car {
@@ -52,18 +65,4 @@ body {
   height: 50px;
   border-radius: 50%;
   background-image: url('coin.png');
-}
-
-.controls {
-  width: 100%;
-  background: gray;
-
-}
-.btnDirection {
-  width: 200px;
-  height: 75px;
-  background: blue;
-  color: white;
-  font-weight: bold;
-  font-size: 3rem;
 }

@@ -2,6 +2,7 @@
 Control = {
   socket: io(),
   color: Math.floor(Math.random() * 16777215).toString(16),
+  isDeath: false,
 
   // Initialize UI and configure player
   init: function () {
@@ -34,6 +35,18 @@ Control = {
         this.socket.emit('move player', 'down');
       }
     }.bind(this));
+
+    this.socket.on('player dies', (playerId) => {
+      if (this.socket.id === playerId) {
+        let counter = 3;
+        setInterval(() => {
+          document.getElementById('controls').innerText = counter--;
+          if (counter < 0) {
+            window.location.reload()
+          }
+        }, 1000)
+      }
+    });
   },
 
   emitDirection: function (event) {

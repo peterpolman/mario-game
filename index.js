@@ -19,6 +19,11 @@ io.on('connection', function (socket) {
     io.emit('move player', msg);
   });
 
+  socket.on('player dies', function (playerId) {
+    console.log('player dies: ' + playerId);
+    io.emit('player dies', playerId);
+  });
+
   socket.on('player connected', function (color) {
     console.log('player connected: ' + socket.id, color);
     io.emit('player connected', socket.id, color);
