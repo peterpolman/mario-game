@@ -145,6 +145,12 @@ App = {
   },
 
   updateSnakes() {
+    const topPlayers = Object.values(this.players).sort((a,b) => b.blocks.length - a.blocks.length);
+
+    if (topPlayers.length) {
+      document.getElementById('canvas').style.boxShadow = `inset 0 0 0 10px #${topPlayers[0].color}`;
+    }
+    
     for (const playerId in App.players) {
       const player = App.players[playerId];
       App.canvas.removeChild(player.blocks.pop());

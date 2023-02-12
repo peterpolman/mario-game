@@ -33,7 +33,7 @@ Control = {
       if (directions.bottom) {
         this.socket.emit('move player', 'down');
       }
-    });
+    }.bind(this));
   },
 
   emitDirection: function (event) {
